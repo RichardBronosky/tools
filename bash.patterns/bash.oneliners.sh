@@ -7,6 +7,14 @@ echo ${HOME##*/}
 # mimic dirname
 echo ${HOME%/*}
 
+# convert a relative path to absolute (this one works for files or dirs)
+cd /usr/local/share/man/; relative=../../bin/git; ll -d $relative; # the setup
+absolute=$([[ -d $relative ]] && (cd $relative; pwd -P) || (cd $(dirname $relative); echo -n $(pwd -P)/$(basename $relative)));
+echo $absolute; ll -d $absolute # the proof
+
+# this simpler one is only for dirs
+(cd $(dirname ../../bin); pwd -P)
+
 # prompt for a bool/char
 read -sn 1 -p "Continue? [Y/n] " response; echo
 
