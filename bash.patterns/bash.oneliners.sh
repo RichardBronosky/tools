@@ -7,13 +7,13 @@ echo ${HOME##*/}
 # mimic dirname
 echo ${HOME%/*}
 
-# convert a relative path to absolute (this one works for files or dirs)
+# convert a relative path to absolute (this one works for files or dirs as long as the path exits)
 cd /usr/local/share/man/; relative=../../bin/git; ll -d $relative; # the setup
-absolute=$([[ -d $relative ]] && (cd $relative; pwd -P) || (cd $(dirname $relative); echo -n $(pwd -P)/$(basename $relative)));
+absolute=$(cd $(dirname $relative); echo -n $(pwd)/$(basename $relative));
 echo $absolute; ll -d $absolute # the proof
 
-# this simpler one is only for dirs
-(cd $(dirname ../../bin); pwd -P)
+# ...this one uses string replacement and doesn't require the path to exist.
+absolute=$(echo $(pwd)/$(echo $relative | sed 's,//,/,g;s,^\./,,')|sed 's,.*//,/,'); echo $absolute; while echo $absolute | grep -q '[^/]\+/\.\./'; do absolute=$(echo $absolute | awk '{if(sub("[^/]+/\\.\\./","")){print}else{exit 1}}'); done; echo $absolute
 
 # prompt for a bool/char
 read -sn 1 -p "Continue? [Y/n] " response; echo
