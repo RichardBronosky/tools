@@ -15,6 +15,9 @@ echo $absolute; ll -d $absolute # the proof
 # ...this one uses string replacement and doesn't require the path to exist.
 absolute=$(echo $(pwd)/$(echo $relative | sed 's,//,/,g;s,^\./,,')|sed 's,.*//,/,'); echo $absolute; while echo $absolute | grep -q '[^/]\+/\.\./'; do absolute=$(echo $absolute | awk '{if(sub("[^/]+/\\.\\./","")){print}else{exit 1}}'); done; echo $absolute
 
+# kill a process and all of its child processes
+PID=NNNN kill $(ps -o 'ppid pid' | awk -v pid=$PID '$1==pid{print $2} END{print pid}')
+
 # prompt for a bool/char
 read -sn 1 -p "Continue? [Y/n] " response; echo
 
