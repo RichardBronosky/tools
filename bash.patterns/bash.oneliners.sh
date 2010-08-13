@@ -41,3 +41,6 @@ date +%Y%m%d%H%M%S
 
 # DiG format as a clean single line for batch processing
 dig +nocmd www.bronosky.com +noall +answer
+
+# create a bunch of files (for exploring git and such)
+rm *; c=0; while [[ $((c++)) -lt 20 ]]; do ls -la >$(printf '%04d' $c); done
