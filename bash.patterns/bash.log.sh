@@ -3,25 +3,19 @@ LOGFILE=/tmp/${0##*/}.log
 
 # a general purpose logging function that is used as prefix similar to time see: man time
 log(){
+    (printf \#%.0s {1..50}; echo)>> $LOGFILE
     if [[ $1 == '-s' ]];then
         shift
         echo -e "$*" >> $LOGFILE
         return 0
     fi
-    echo -e "\n###########################################\n" >> $LOGFILE
-    cmd="$*"
-    if [[ ! -t 0 ]]; then
-        {
-            echo "$cmd << FROM_STDIN" >> $LOGFILE
-            eval $cmd << EOF
-$(cat /dev/stdin | tee -a $LOGFILE; echo "FROM_STDIN" >> $LOGFILE)
-EOF
-        } 2>&1 | tee -a $LOGFILE
+    if [[ -t 0 ]]; then
+        echo $* >> $LOGFILE
+        $* 2>&1 | tee -a $LOGFILE
     else
-        echo $cmd >> $LOGFILE
-        {
-            eval "$cmd";
-        } 2>&1 | tee -a $LOGFILE
+        $* << EOF 2>&1 | tee -a $LOGFILE
+$(echo "$* << FROM_STDIN" >> $LOGFILE; tee -a $LOGFILE; echo "FROM_STDIN" >> $LOGFILE)
+EOF
     fi
 }
 
