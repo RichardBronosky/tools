@@ -37,8 +37,8 @@ choose_from_array(){
         elif [[ $CHOICE -gt 0 && $CHOICE -eq $((ARRAY_LENGTH+1)) && -n $OTHER_PROMPT ]]; then
             # -e allows tab completion of filenames if readline is available
             read -e -p "$OTHER_PROMPT? " CHOICE
-            # expand ~, ~root, $vars, etc. (remove ; and \ to sanitize)
-            CHOICE=$(eval "echo ${CHOICE//[;\\]/ }")
+            # readline performs tilde completion, but not tilde expansion. So, sanitize and expand.
+            printf -v CHOICE %q "${CHOICE}x"; CHOICE="${CHOICE%x}"; CHOICE=$(eval "printf %s $CHOICE");
         else
             echo "Invalid choice. Try again."
             CHOICE=""
@@ -49,10 +49,13 @@ choose_from_array(){
 # BEGIN examples:
 echo "Which public key?"
     choose_from_array ~/.ssh/*.pub
+echo "You chose $CHOICE."
 
 echo "Which private key?"
    ids=($(ls ~/.ssh/id_* | grep -v '\.pub$'))
    choose_from_array "${ids[@]}" #<-- That quote-brace-bracket pattern is important!
+echo "You chose $CHOICE."
 
 echo "Where should output be logged?"
    choose_from_array -o "Enter alternative path" "$PWD" "/tmp/"
+echo "You chose $CHOICE."
