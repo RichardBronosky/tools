@@ -1,3 +1,12 @@
+_lines_to_array(){
+    local array_name="$1"
+    local line
+    while IFS='' read -r line; do
+        $array_name+=("$line");
+    done
+    #done < <("${command[@]}")
+}
+
 b(){
     # If b is defined in the parent scope, you don't want to clobber it.
     local array=("$@");
@@ -31,7 +40,6 @@ b(){
     c=0;
     for n in "${array[*]}" ;
         do echo "$((c+1)). ${i[$((c++))]} is $n"; done
-
 }
 
 b 2 4 "This is a test." 6 8
