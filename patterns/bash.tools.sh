@@ -8,18 +8,10 @@ function usage(){
     cat << Usage
 
 Most common usage is:
-1. Update the function update_hosts
-    * Each call to the host_alias function within is a request to "make lookups
-      for arg1 return the same results as lookups for arg2."
-2. Execute this script with a subcommand as arg1. The most common being "start"
-    * Ex:
-            ./util start
+    $0 usage # TODO: Change this Boilerplate
 
-If the OS resolver gets mucked up, it will be restored on reboot. You can clear
-the changes to the OS resolver and let the OS try to heal itself without a
-reboot by running the clear_dns subcommand.
-    * Ex:
-            ./util clear_dns
+Other public functions:
+$(_func | xargs -n 1 printf '%4s%s %s\n' ' ' "$0")
 
 Usage
 }
@@ -69,32 +61,19 @@ _confirm_(){
     fi
 }
 
-_main(){
-    (
-        _path_to_this_script cd
-        if [[ -z "${1:-}" ]]; then
-            _func
-        else
-            cmd="$1"
-            #[[ $cmd == kill ]] && cmd="kill_dnsmasq"
-            shift
-            $cmd "$@"
-        fi
-    )
-}
-
-_func(){
-    declare -F | awk '$2=="-f" && $3~/^[^_]/{print $3}'
-}
-
 _join(){ # join stdin lines with arg1, optionally wrapped in arg2 and arg3
     if [[ -n "${2:-}" ]]; then printf "%s" "${2}"; fi
     awk -v d="${1:-}" '{s=( ((NR==1) ? s : (s d)) $0)}END{printf s}'
     if [[ -n "${3:-}" ]]; then printf "%s" "${3}"; elif [[ -n "${2:-}" ]]; then printf "%s" "${2}"; fi
 }
 
+_get_never_run_lines(){
+    awk '/[#]+ Never run [#]+/{print_after=NR+1} print_after>0 && NR>print_after{print}' "$(_path_to_this_script)"
+}
+
 _path_to_this_script(){
-    local dir; dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+    [[ -n ${__work_dir:-} ]] || __work_dir="$(pwd -P)"
+    local dir; dir="$(cd $__work_dir; cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
     if [[ ${1:-} == "cd" ]]; then
         cd "$dir"
     else
@@ -103,7 +82,7 @@ _path_to_this_script(){
 }
 
 _entrypoint_for_symlinks(){
-    local symlinks=( example1 example2)
+    local symlinks=( example1 example2 )
     for symlink in "${symlinks[@]}"; do
         if [[ "$(basename "${BASH_SOURCE[0]}")" == "$symlink" ]]; then
             # shellcheck disable=SC2034
@@ -112,6 +91,24 @@ _entrypoint_for_symlinks(){
             exit 0
         fi
     done
+}
+
+_func(){
+    declare -F | awk '$2=="-f" && $3~/^[^_]/{print $3}'
+}
+
+_main(){
+    (
+        _path_to_this_script cd
+        if [[ -z "${1:-}" ]]; then
+            usage
+        else
+            cmd="$1"
+            #[[ $cmd == kill ]] && cmd="kill_dnsmasq"
+            shift
+            $cmd "$@"
+        fi
+    )
 }
 
 _entrypoint(){
@@ -128,3 +125,12 @@ _entrypoint(){
 git_url_base="https://github.com/richardbronosky"
 
 _entrypoint "$@"
+
+exit;
+
+###############
+## Never run ##
+###############
+uno
+dos
+tres
